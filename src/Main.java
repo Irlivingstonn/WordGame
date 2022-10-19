@@ -1,6 +1,8 @@
 // Name: Isabella Livingston
 // Date: 16 October 2022
-// Description:
+// Description: This program will get 7 Unique letters from "words.txt" and display it to the user.
+//              The user has to enter a word that consists of the same letters that are displayed
+//              1 point for entering 4 letters, and more points for the length of the word
 
 // Importing Assets
 import java.io.*;
@@ -13,8 +15,6 @@ public class Main {
         // -------- DECLARING --------
         String END_PROGRAM = "bye";
         String command = "a";
-        File words_file = new File("words.txt");
-        Random random = new Random();
         Integer score = 0;
         Scanner scanner = new Scanner(System.in);
 
@@ -22,7 +22,7 @@ public class Main {
 
 
         // Getting 7 Unique Letters
-        ArrayList<Character> unique_letters = generate_string(random);
+        ArrayList<Character> unique_letters = generate_string();
 
         // -------- OUTPUT --------
         displaying_output(unique_letters, score);
@@ -39,10 +39,10 @@ public class Main {
                 // -------- PROCESSING --------
                 score = updating_score(command, score);
 
+                // Keeps track of words the User Entered
                 recorded_words.add(command);
 
             }
-
 
         }
 
@@ -93,14 +93,12 @@ public class Main {
     public static Boolean is_invalid(String new_user_word, ArrayList<Character> unique_letters, String END_PROGRAM, ArrayList<String> recorded_words, Integer score) {
 
 
-        Boolean has_same_word_from_file = false;
+        boolean has_same_word_from_file;
 
         // If the User Input is "bye" then returns as false and ends the program
         if (new_user_word.equals(END_PROGRAM)) {
             return false;
         }
-
-
 
         // Mix: Shuffles the Unique Letters around and displays the result
         //      Then the user has to enter the input again
@@ -124,8 +122,8 @@ public class Main {
 
             // Else it displays the correct words
             else{
-                for(Integer word = 0; word < recorded_words.size(); word++){
-                    System.out.println(recorded_words.get(word));
+                for (String recorded_word : recorded_words) {
+                    System.out.println(recorded_word);
                 }
 
             }
@@ -152,19 +150,19 @@ public class Main {
 
          // Compares the user's word to the unique letters; Sees if there's at least one similar letter
 
-         for (Integer user_letter = 0; user_letter < new_user_word.length(); user_letter++){
+         for (int user_letter = 0; user_letter < new_user_word.length(); user_letter++){
 
              // Resets Variable
              has_same_word_from_file = false;
 
 
-            for (Integer unique_word = 0; unique_word < unique_letters.size(); unique_word++){
+             for (Character unique_letter : unique_letters) {
 
-                // If there's a similar letter then it keeps note of that
-                if (Character.toUpperCase(new_user_word.charAt(user_letter)) == Character.toUpperCase(unique_letters.get(unique_word))){
-                    has_same_word_from_file = true;
-                }
-            }
+                 // If there's a similar letter then it keeps note of that
+                 if (Character.toUpperCase(new_user_word.charAt(user_letter)) == Character.toUpperCase(unique_letter)) {
+                     has_same_word_from_file = true;
+                 }
+             }
 
             // If there isn't a similar letter, it tells the user that
              if (!has_same_word_from_file){
@@ -178,16 +176,17 @@ public class Main {
 
          // Checks to See if the Word is already recorded
 
-        for (Integer element = 0 ; element < recorded_words.size(); element++){
+        for (String recorded_word : recorded_words) {
 
-            if (new_user_word.equals(recorded_words.get(element))){
+            if (new_user_word.equals(recorded_word)) {
                 System.out.println("   Error: This Word is Already Recorded");
                 return true;
             }
         }
 
 
-         // Declares Buffered Reader
+        // Everything Below This Comment (In the Function) Checks to see if the Inputted Word is in the File
+        // Declares Buffered Reader
          BufferedReader reader;
 
          try {
@@ -216,7 +215,7 @@ public class Main {
 
          // Catch for Error
          catch (IOException e) {
-             e.printStackTrace();
+             System.out.println("  Error: Couldn't Access File");
          }
 
          // If it can't find the same word, then the user has to enter the input again
@@ -230,8 +229,8 @@ public class Main {
     public static void displaying_output(ArrayList<Character> unique_letters, Integer score){
 
         // Prints the Unique Letters and Score
-        for(Integer i = 0; i < unique_letters.size(); i++){
-            System.out.printf("%9s", Character.toLowerCase(unique_letters.get(i)));
+        for (Character unique_letter : unique_letters) {
+            System.out.printf("%9s", Character.toLowerCase(unique_letter));
         }
 
         System.out.println("\nScore: " + score);
@@ -239,51 +238,53 @@ public class Main {
     }
 
     // Generates String Function
-    public static ArrayList<Character> generate_string(Random random){
+    public static ArrayList<Character> generate_string(){
 
         // Declaring Variables
-        Integer MAX = 7;
         //char[] unique_letters = {};
         ArrayList<Character> unique_letters = new ArrayList<>();
-
-
-
         File file = new File("words.txt");
-        final RandomAccessFile f;
+        final RandomAccessFile reads_file;
+
+
+        // Tries to Get a Random Word from File
         try {
-            f = new RandomAccessFile(file, "r");
 
-            long randomLocation = (long) (Math.random() * f.length());
-            f.seek(randomLocation);
-            f.readLine();
-            String randomLine = f.readLine();
+            reads_file = new RandomAccessFile(file, "r");
 
+            // Gets a Random Position in the File
+            long randomLocation = (long) (Math.random() * reads_file.length());
 
+            // Looks for Position
+            reads_file.seek(randomLocation);
+
+            // Reads It and Stores in Variable
+            String randomLine = reads_file.readLine();
+
+            // Checks to See if it's Unique:
+            // - If It's Unique: Then the Word will be Mixed and Displayed
+            // - Else: It Gets a New Random Line in File
             while(isUnique(randomLine)){
 
-                randomLocation = (long) (Math.random() * f.length());
-                f.seek(randomLocation);
-                f.readLine();
-                randomLine = f.readLine();
+                // Same Things As Above
+                randomLocation = (long) (Math.random() * reads_file.length());
+                reads_file.seek(randomLocation);
+                randomLine = reads_file.readLine();
 
             }
 
-
-
-
-            for (Integer word = 0; word < randomLine.length() ; word++){
+            // Adds Each Letter of the Unique Word to a List
+            for (int word = 0; word < randomLine.length() ; word++){
                 unique_letters.add(randomLine.charAt(word));
             }
 
-            f.close();
+            // Closes The File
+            reads_file.close();
         }
 
-        catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-
+        // Catch for Error
         catch (IOException e) {
-            throw new RuntimeException(e);
+            System.out.println("  Error: Couldn't Access File");
         }
 
         // Mixes List so that it doesn't print out the exact word of the unique letters
@@ -294,21 +295,23 @@ public class Main {
 
     }
 
+    // Is Unique Function: Got Help With it From TA In Computer Science Lab
     public static Boolean isUnique(String random_word){
 
-        Set<Character> new_set = new HashSet<Character>();
+        // Declares Set
+        Set<Character> new_set = new HashSet<>();
 
+        // Check to see if the length of the word is 7 letters
         if (random_word.length() != 7){
             return true;
         }
 
-        for (Integer letter = 0; letter < random_word.length(); letter++){
+        // Adds Each Letter to the Set
+        for (int letter = 0; letter < random_word.length(); letter++){
             new_set.add(random_word.charAt(letter));
         }
 
+        // Since Elements in the Set are not allowed to duplicate, it checks to see if any letters repeat
         return !(new_set.size() == random_word.length());
     }
-
-
-
 }
