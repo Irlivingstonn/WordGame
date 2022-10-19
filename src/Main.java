@@ -3,15 +3,8 @@
 // Description:
 
 // Importing Assets
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Random;
-import java.util.Scanner;
-import java.util.Collections;
-
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.util.*;
 
 // Main Project
 public class Main {
@@ -168,7 +161,7 @@ public class Main {
             for (Integer unique_word = 0; unique_word < unique_letters.size(); unique_word++){
 
                 // If there's a similar letter then it keeps note of that
-                if (Character.toUpperCase(new_user_word.charAt(user_letter)) == unique_letters.get(unique_word)){
+                if (Character.toUpperCase(new_user_word.charAt(user_letter)) == Character.toUpperCase(unique_letters.get(unique_word))){
                     has_same_word_from_file = true;
                 }
             }
@@ -182,6 +175,18 @@ public class Main {
 
          }
 
+
+         // Checks to See if the Word is already recorded
+
+        for (Integer element = 0 ; element < recorded_words.size(); element++){
+
+            if (new_user_word.equals(recorded_words.get(element))){
+                System.out.println("   Error: This Word is Already Recorded");
+                return true;
+            }
+        }
+
+
          // Declares Buffered Reader
          BufferedReader reader;
 
@@ -192,7 +197,10 @@ public class Main {
              String line = reader.readLine();
 
              // Checks every line in file to see if it's similar
-             while ((line != null) && (!has_same_word_from_file)) {
+             while ((line != null)) {
+
+                 // Going to Next Line
+                 line = reader.readLine();
 
                  // Checks to see if the Line isn't null and user has the same word in the file
                  if ((line != null) && (line.equals(new_user_word))){
@@ -240,50 +248,67 @@ public class Main {
 
 
 
-        // Declares Buffered Reader
-        BufferedReader reader;
-
+        File file = new File("words.txt");
+        final RandomAccessFile f;
         try {
+            f = new RandomAccessFile(file, "r");
 
-            // Reads the words.txt file and puts line in variable
-            reader = new BufferedReader(new FileReader("words.txt"));
-            String random_line = reader.readLine();
-
-
-
-            // Closes the reader
-            reader.close();
-        }
-
-        // Catch for Error
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        /////////////////////////////////////////
+            long randomLocation = (long) (Math.random() * f.length());
+            f.seek(randomLocation);
+            f.readLine();
+            String randomLine = f.readLine();
 
 
-        // Getting 3 random numbers
-        for (Integer element = 0; element < MAX; element++) {
+            while(isUnique(randomLine)){
 
-            // Gets a random number
-            char random_letter = (char) (random.nextInt(26) + 65);
+                randomLocation = (long) (Math.random() * f.length());
+                f.seek(randomLocation);
+                f.readLine();
+                randomLine = f.readLine();
 
-
-            // Gets a new random number if it's repeated
-            // Doesn't stop until there's a different value
-            while(unique_letters.contains(random_letter)){
-                random_letter = (char) (random.nextInt(26) + 65);
             }
 
-            // Adds random number to arraylist
-            unique_letters.add(random_letter);
 
+
+
+            for (Integer word = 0; word < randomLine.length() ; word++){
+                unique_letters.add(randomLine.charAt(word));
+            }
+
+            f.close();
         }
+
+        catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        // Mixes List so that it doesn't print out the exact word of the unique letters
+        Collections.shuffle(unique_letters);
 
         // Returns Unique Letters
         return unique_letters;
 
     }
+
+    public static Boolean isUnique(String random_word){
+
+        Set<Character> new_set = new HashSet<Character>();
+
+        if (random_word.length() != 7){
+            return true;
+        }
+
+        for (Integer letter = 0; letter < random_word.length(); letter++){
+            new_set.add(random_word.charAt(letter));
+        }
+
+        return !(new_set.size() == random_word.length());
+    }
+
+
 
 }
